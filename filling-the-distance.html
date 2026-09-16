@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Filling the Distance</title><style id="page-style">
+  :root{
+    --bg:#EEF0F0;
+    --surface:#FFFFFF;
+    --surface-2:#E4E8E8;
+    --ink:#14171C;
+    --ink-soft:#5B6168;
+    --line:#D7DBDC;
+    --accent:#C24B62;
+    --accent-ink:#FFFFFF;
+    --accent-2:#276E66;
+    --accent-2-soft:#DCEAE7;
+    --radius:14px;
+    --font-display:'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body:'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1214;
+      --surface:#191D20;
+      --surface-2:#20262A;
+      --ink:#ECEEEF;
+      --ink-soft:#9BA2A8;
+      --line:#2B3134;
+      --accent:#E58BA0;
+      --accent-ink:#191115;
+      --accent-2:#5FB0A6;
+      --accent-2-soft:#173330;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1214;
+    --surface:#191D20;
+    --surface-2:#20262A;
+    --ink:#ECEEEF;
+    --ink-soft:#9BA2A8;
+    --line:#2B3134;
+    --accent:#E58BA0;
+    --accent-ink:#191115;
+    --accent-2:#5FB0A6;
+    --accent-2-soft:#173330;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:15px;
+    line-height:1.65;
+    padding-inline:20px;
+    padding-block:40px 80px;
+  }
+  #app{
+    max-width:740px;
+    margin:0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:36px;
+  }
+  h1,h2,h3{font-family:var(--font-display); text-wrap:balance; margin:0;}
+  .kicker{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.08em;
+    color:var(--accent-2);
+  }
+  .hero h1{font-size:clamp(28px,5vw,38px); font-weight:600; margin-top:6px;}
+  .hero .lede{color:var(--ink-soft); margin-top:14px; max-width:62ch;}
+  .refs{
+    margin-top:16px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--surface);
+    padding:4px 16px;
+  }
+  .refs summary{
+    cursor:pointer;
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.02em;
+    color:var(--ink-soft);
+    padding:10px 0;
+  }
+  .refs ul{margin:0 0 14px 0; padding-left:18px; color:var(--ink-soft); font-size:13.5px;}
+  .refs li{margin-bottom:6px;}
+  .refs b{color:var(--ink); font-weight:600;}
+
+  .focusbox{
+    margin-top:20px;
+    background:var(--accent-2-soft);
+    border:1px solid var(--accent-2);
+    border-radius:var(--radius);
+    padding:16px 18px;
+  }
+  .focusbox label{
+    display:block;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.03em;
+    color:var(--accent-2);
+    margin-bottom:8px;
+  }
+  .focusbox input{
+    width:100%;
+    border:none;
+    background:transparent;
+    font-family:var(--font-display);
+    font-size:17px;
+    color:var(--ink);
+    outline:none;
+  }
+
+  .progress{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .progress .track{display:flex; gap:8px;}
+  .dot{
+    width:26px; height:26px;
+    border-radius:50%;
+    border:1.5px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);
+    background:var(--surface);
+    transition:background .2s, border-color .2s, color .2s;
+  }
+  .dot.done{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+  .progress .label{font-family:var(--font-mono); font-size:12px; color:var(--ink-soft);}
+
+  .days{display:flex; flex-direction:column; gap:0;}
+  .day{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px 22px 24px;
+    margin-top:22px;
+  }
+  .day::before{
+    content:"";
+    position:absolute;
+    left:-1px;
+    top:-22px;
+    width:2px;
+    height:22px;
+    background:var(--line);
+  }
+  .day:first-child::before{display:none;}
+  .day-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .day-num{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.06em;
+    color:var(--accent-2);
+  }
+  .day h2{font-size:21px; font-weight:600; margin-top:4px;}
+  .day-frame{
+    font-style:italic;
+    color:var(--ink-soft);
+    font-size:13px;
+    margin-top:4px;
+  }
+  .done-toggle{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    cursor:pointer;
+    user-select:none;
+  }
+  .done-toggle input{width:15px; height:15px; accent-color:var(--accent);}
+
+  .start{
+    margin-top:14px;
+    background:var(--accent-2-soft);
+    border-left:3px solid var(--accent-2);
+    border-radius:0 8px 8px 0;
+    padding:12px 14px;
+    font-size:13.5px;
+    color:var(--ink);
+  }
+  .start .tag{
+    display:block;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:.03em;
+    color:var(--accent-2);
+    margin-bottom:6px;
+  }
+
+  .fields{
+    margin-top:18px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:5px;
+  }
+  .field textarea{
+    width:100%;
+    min-height:56px;
+    resize:vertical;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:13.5px;
+    line-height:1.55;
+    padding:9px 11px;
+    outline:none;
+  }
+  .field textarea:focus{border-color:var(--accent-2);}
+  .field textarea::placeholder{color:var(--ink-soft); opacity:.75;}
+
+  .synthesis{
+    margin-top:30px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px;
+  }
+  .synthesis .kicker{margin-bottom:4px;}
+  .synthesis h2{font-size:22px; font-weight:600; margin-bottom:16px;}
+
+  .statusbar{
+    position:sticky;
+    bottom:0;
+    margin-top:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:12px 16px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .statusbar button{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    letter-spacing:.02em;
+    background:var(--accent);
+    color:var(--accent-ink);
+    border:none;
+    border-radius:7px;
+    padding:8px 14px;
+    cursor:pointer;
+  }
+  .statusbar button:active{opacity:.85;}
+
+  @media (max-width:480px){
+    .day{padding:18px 16px 20px;}
+    .hero h1{font-size:26px;}
+  }
+</style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+</head>
+<body>
+<div id="app"></div><script>
+(function(){
+  var SELF_SRC = document.currentScript.textContent;
+
+  var DEFAULT_STATE = {"focusQuestion": "If repetition and imagination are devices that make an absent person feel present, what happens to that intimacy the moment the distance they were filling actually disappears?", "days": [{"n": 1, "title": "Presence as Signal", "frame": "Where this week begins", "start": "Strip all content out of your messages and keep only the timing. Build something that sends a signal only when contact happens (a light, a vibration, a mark on paper) and watch it for a day. Notice when it makes you feel like they're near, and when it doesn't.", "done": true, "fields": {"q": "Even without knowing what a message says, can the mere signal that someone reached out, and its timing, make you feel their presence?\nI expected that even content-free, recurring signals would make me think of a partner who is physically far away.", "made": "I built a simple webpage that lights up a heart once whenever a message arrives, instead of showing its content. For a day, I checked only the light each time a message came in, and logged how close my partner felt in that moment. I also logged the time of each signal and the gap between signals.", "happened": "The first few signals made me feel like my partner was really thinking of me. But once signals started arriving back to back in a short span, each one increasingly faded into the background. Conversely, a single signal appearing after a long silence felt much stronger. Unexpectedly, once the content was completely gone, I also started wondering, \"what did they actually say?\" The signal told me someone was there, but not why they'd reached out.", "revealed": "The hearts created a sense of presence, but not necessarily intimacy. Absence seemed to shape how the next moment of presence was felt.", "changed": "Instead of irregular signals, I want to deliberately repeat the same signal. I'll check whether continued repetition strengthens the sense of presence, or whether it just becomes an automatic backdrop I get used to."}}, {"n": 2, "title": "The Repetition of Ritual", "frame": "Picks up from Day 1's finding on the gap between signal and content", "start": "Pick one small fixed gesture (the same phrase, the same time, the same emoji) and repeat it at regular intervals for a day. Each time, log how close it makes you feel, and look for the point where it stops feeling like a feeling and starts feeling like an automatic reflex (this connects to Merolla's 2012 finding that the effect depends on timing).", "done": true, "fields": {"q": "If you repeat the same small communication behavior, does it start to feel like a relationship ritual rather than just a message? I expected repetition would keep reminding me of my partner's presence, but that at some point it might start running on habit rather than meaning.", "made": "I picked one small gesture, for example sending the same symbol ● back and forth at regular intervals throughout the day. Each time I received one, I briefly logged connection / expectation / automaticity.", "happened": "At first, I noticed my partner every time a signal arrived. But after a few repetitions, what I felt was less about the signal itself and more the anticipation of \"it's about to come.\" By the second half, actually receiving the signal barely registered emotionally, while a signal arriving later than scheduled made me notice my partner much more strongly.", "revealed": "Repetition didn't so much strengthen the meaning of each individual message as it created a predictable rhythm. Interestingly, my partner's absence became sharper when that rhythm broke than when it ran normally. So repetition might be a structure that produces presence and, at the same time, makes absence noticeable.", "changed": "So I want to find out whether what I've been calling my partner's presence is really about them, or just a pattern I've gotten used to. Next, I'll have an automated system reproduce the same rhythm instead of a person."}}, {"n": 3, "title": "Can You Tell the Difference", "frame": "Picks up the rhythm found on Day 2", "start": "Build a script that auto-replies, mimicking exactly the rhythm you found on Day 2, same timing, same set phrase. Run a blind test on yourself or someone else. How far does it feel real, and where does it break down?", "done": true, "fields": {"q": "On Day 2, I picked a meaningless emoji alone and repeated it. So if that same repetition carried a meaning the two of us had agreed on together, would the same repetition feel different? I suspected that the agreed-upon meaning inside the repetition might matter more for creating presence than the repetition itself.", "made": "This time, instead of choosing an emoji alone, one person proposed an emoji and its meaning, and the other could accept it or counter-propose a different one. Once we'd agreed on an emoji, we exchanged it throughout the day the same way as Day 2. I also kept a record of the proposing-and-agreeing process itself.", "happened": "The agreeing process itself did feel slightly different from Day 2. Still, after some time passed, this too settled into something that felt like a repeated, familiar routine.", "revealed": "What creates meaning might not be the repetition itself but the agreeing process that happens before it starts. Day 2's emoji was a decision I made alone, so to my partner it was actually a signal with no meaning attached. Day 3's emoji, having been made together, did carry more felt meaning than before.", "changed": "So what happens when there's simply too little information about the other person to begin with? If agreed-upon meaning changes how much weight repetition carries, I want to look next at how it's different when there's almost no information and imagination fills that space instead."}}, {"n": 4, "title": "Filling the Gap", "frame": "Picks up from where Day 3's illusion broke", "start": "Give someone only fragmentary information about your partner: a blurry photo, a few details, a voice clip with the content stripped out. Record how they imagine and describe your partner from that. You'll need it again tomorrow.", "done": true, "fields": {"q": "Now the other person isn't a stranger, they're a real partner I already know well. So the question had to change. If instead of personality or taste, I ask them to guess what their partner is doing right now, will imagination still fill the gap even between two people who already know each other?", "made": "Each of us took and shared three deliberately blurred, cropped photos capturing this exact moment. Looking only at those photos, the partner wrote down what they imagined was happening. We didn't write down what was actually going on, and kept it hidden until Day 5.", "happened": "From just three photos, soomin wrote, \"I keep wondering who they ate with and where they went.\" jaehyun went further, noting specifically that the place in the photo didn't look like a regular restaurant, and that the sidewalk photo looked like it was taken on the way home from work. In reality, soomin was having omakase with a friend she hadn't seen in a while, and jaehyun was getting egg tarts with a friend after school, yet three photos alone were enough for both of them to guess quite specifically.", "revealed": "Even between two people who already know each other well, there was still a gap around this exact moment, and that gap was still filled by imagination. Unlike the earlier stranger version of Day 4, though, the imagining focused on the action and context of this specific moment rather than on personality or taste.", "changed": "So next, I want to check how accurate that imagining turns out to be once the real situation is revealed, and what emotion that gap leads to between two people who already know each other well."}}, {"n": 5, "title": "The Moment of Reveal", "frame": "Picks up directly from Day 4's imagined description", "start": "Show that person the real thing: real photos, a real voice, real details. Record exactly where the imagined version and the real one diverge, and what reaction shows up when they're confronted with that gap. This is exactly the moment Stafford and Merolla's research points to.", "done": true, "fields": {"q": "When the imagined version of this moment collides with what actually happened, does that gap still produce an emotion even between two people who know each other well? I expected a different kind of reaction than the idealization you'd see with a stranger.", "made": "Next to what the partner had imagined on Day 4, I revealed, side by side, the real situation written by the person who took the photos, briefly noting what they were doing and who they were with, so the two could be compared directly.", "happened": "jaehyun's real story was meeting a friend after school and eating egg tarts that soomin likes, wishing they could have had them together. Seeing this, soomin wrote, \"Next time we meet, we should get egg tarts together,\" adding that she wondered who the friend was and wished she could have been there. Conversely, soomin's real story was having omakase with a friend she hadn't seen in a while, and seeing this, jaehyun wrote that he wondered what kind of friend it was and wished he'd heard about it beforehand.", "revealed": "The reaction after learning the real situation was less about \"right or wrong\" and closer to a wistful \"I wanted to be there\" or \"I wish I'd known beforehand.\" What lingered more wasn't how accurate the guess had been, but the sense of not having been able to share that moment together.", "changed": "So next, instead of imagining and guessing, I want to try the next prototype as simply sharing our days exactly as they are."}}, {"n": 6, "title": "The Remedy of the Mundane", "frame": "Picks up from the idealization gap revealed on Day 5", "start": "Build a small tool that only exchanges unpolished, mundane, everyday information: what you had for lunch, a typo, a boring commute. Use it for a day and compare how it feels against the more polished communication you tried earlier this week.", "done": true, "fields": {"q": "If you share just three short sentences about small moments, no photos, no rating, does that alone make your partner's day feel close?", "made": "I simplified it down to exchanging three short sentences about small moments from the day, with no photos and no felt-distance rating.", "happened": "soomin wrote, \"Had an iced Americano for breakfast,\" \"Ramen for lunch,\" \"Dinner with a coworker.\" jaehyun wrote, \"Was late today,\" \"Bread for lunch,\" \"Had wine in the evening.\" Both sets were completely unremarkable sentences.", "revealed": "With photos, comparison, and rating all stripped away, it became a format you could share lightly and often, with no pressure. Unlike Day 4 and 5, there was no need to guess or figure anything out, so it felt closer to just brushing past your partner's day and getting a glimpse of it.", "changed": "Across six prototypes, this research converged not on knowing your partner more, but on leaving the unknown as unknown while still holding onto a sense of their presence. In the next stage, I want to focus on refining these six steps into one finished tool."}}], "synthesis": {"discovery": "The most important finding across all six prototypes was that absence isn't just an information gap, it's a space for imagination, repetition, and ritual to move into. Days 1 through 3 showed that repeated signals and agreed-upon meaning create a partner's presence, while ironically making their absence more noticeable whenever that rhythm broke. Days 4 and 5 showed that even a real couple who already know each other well still have gaps around the present moment, and imagination still fills them. But how accurate that imagining turned out to be mattered far less than the feeling itself of not having been there together, things like \"I wanted to be there\" or \"I wish I'd known beforehand.\" Day 6 showed that dropping photos and evaluation altogether, and sharing just three mundane sentences, made a partner feel like a specific person living an ordinary day, without any pressure. In the end, this research converged on a direction that isn't about knowing your partner more or more accurately, but about holding onto a sense of their presence while still letting the unknown stay unknown.", "urgent": "The question that feels most urgent right now is whether the wistfulness that showed up on Days 4 and 5, that \"I wanted to be there\" feeling, would still read as intimacy if it kept repeating, or whether it would eventually curdle into alienation or pressure. In a one-day experiment, that wistfulness read as genuine interest in each other, but I haven't yet confirmed whether it would still feel that way as a tool used every day.", "next": "Next, I want to try a hybrid format over a full week: use Day 6's low-pressure, mundane sharing as the everyday baseline, and layer in Day 4 and 5's imagine-then-reveal moments only occasionally on top of it. I want to see, over a longer stretch of time, whether the everyday mundane details keep a partner feeling like a specific, present person while the occasional imagining and reveal still produce that spark, or whether repetition dulls that feeling too."}};
+
+  function esc(s){
+    return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function safeJSON(o){ return JSON.stringify(o).replace(/</g,"\\u003c"); }
+
+  function loadState(){
+    var el = document.getElementById("init-state");
+    if(el){
+      try{ return JSON.parse(el.textContent); }catch(e){}
+    }
+    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  }
+  var STATE = loadState();
+
+  function fieldBlock(dayN, key, id, label, placeholder){
+    var val = STATE.days[dayN-1].fields[key];
+    return '<div class="field">'
+      + '<label for="'+id+'">'+label+'</label>'
+      + '<textarea id="'+id+'" data-path="days.'+(dayN-1)+'.fields.'+key+'" placeholder="'+esc(placeholder)+'">'+esc(val)+'</textarea>'
+      + '</div>';
+  }
+
+  function renderDay(d){
+    var idx = d.n-1;
+    return '<div class="day">'
+      + '<div class="day-head">'
+      +   '<div>'
+      +     '<div class="day-num">DAY 0'+d.n+'</div>'
+      +     '<h2>'+esc(d.title)+'</h2>'
+      +     '<div class="day-frame">'+esc(d.frame)+'</div>'
+      +   '</div>'
+      +   '<label class="done-toggle" for="day-'+d.n+'-done">'
+      +     '<input type="checkbox" id="day-'+d.n+'-done" data-path="days.'+idx+'.done" data-kind="done" data-day="'+d.n+'"'+(d.done?' checked':'')+'>'
+      +     (d.done ? 'Done' : 'Mark done')
+      +   '</label>'
+      + '</div>'
+      + '<div class="start"><span class="tag">Starting point, feel free to change it</span>'+esc(d.start)+'</div>'
+      + '<div class="fields">'
+      +   fieldBlock(d.n,'q','day-'+d.n+'-q','The question or hypothesis you\'re testing today','What are you actually testing today?')
+      +   fieldBlock(d.n,'made','day-'+d.n+'-made','What you built, and how you tested it','Describe the prototype, and who or what you tried it on.')
+      +   fieldBlock(d.n,'happened','day-'+d.n+'-happened','What happened, including failures or unexpected results','Be specific. Unexpected results matter too.')
+      +   fieldBlock(d.n,'revealed','day-'+d.n+'-revealed','What this prototype revealed that you didn\'t know before building it','Write the real insight, not just the outcome.')
+      +   fieldBlock(d.n,'changed','day-'+d.n+'-changed','What you\'ll change for the next prototype','This becomes tomorrow\'s starting point.')
+      + '</div>'
+      + '</div>';
+  }
+
+  function renderBody(state){
+    var refs = '<details class="refs"><summary>Research behind this journal</summary><ul>'
+      + '<li><b>Sahlstein (2004)</b> Togetherness and separation aren\'t opposites, they constitute each other.</li>'
+      + '<li><b>Jiang & Hancock (2013)</b> Distance changes how people communicate, and that change can itself produce intimacy.</li>'
+      + '<li><b>Merolla (2012)</b> The effect of relationship-maintenance behaviors depends on whether it\'s before, during, or after the separation.</li>'
+      + '<li><b>Stafford & Merolla (2007)</b> The more idealization builds during separation, the more unstable the relationship becomes after reunion.</li>'
+      + '</ul></details>';
+
+    var hero = '<div class="hero">'
+      + '<div class="kicker">Rapid Prototype · 6-Day Studio Journal</div>'
+      + '<h1>Filling the Distance</h1>'
+      + '<p class="lede">This week\'s research surfaced four truisms. Absence is itself a form of presence. Distance changes the language of intimacy. Repetition turns communication into presence. Distance leaves room for an imagined lover to move in. Put together, they point to one tension: the very behaviors that make an absent person feel present (rituals, repetition, imagined detail) may be quietly building an idealized version that diverges from the real person, and that idealization can destabilize the relationship once you\'re actually back together.</p>'
+      + refs
+      + '<div class="focusbox">'
+      +   '<label for="focus-q">This week\'s focus question, feel free to edit the wording</label>'
+      +   '<input id="focus-q" type="text" data-path="focusQuestion" value="'+esc(state.focusQuestion)+'">'
+      + '</div>'
+      + '</div>';
+
+    var doneCount = state.days.filter(function(d){return d.done;}).length;
+    var dots = '<div class="progress"><div class="track">'
+      + state.days.map(function(d){ return '<div class="dot'+(d.done?' done':'')+'" id="dot-'+d.n+'">'+d.n+'</div>'; }).join('')
+      + '</div><span class="label">'+doneCount+' of 6 prototypes logged</span></div>';
+
+    var days = '<div class="days">'+state.days.map(renderDay).join('')+'</div>';
+
+    var synthesis = '<div class="synthesis">'
+      + '<div class="kicker">After all six are done</div>'
+      + '<h2>Synthesis</h2>'
+      + '<div class="fields">'
+      +   '<div class="field"><label for="synth-discovery">The single most important discovery across all six</label><textarea id="synth-discovery" data-path="synthesis.discovery" placeholder="Looking back on the week, what surprised you most?">'+esc(state.synthesis.discovery)+'</textarea></div>'
+      +   '<div class="field"><label for="synth-urgent">The question that feels most urgent right now</label><textarea id="synth-urgent" data-path="synthesis.urgent" placeholder="It doesn\'t have to be the question you started with. Just the one you have now.">'+esc(state.synthesis.urgent)+'</textarea></div>'
+      +   '<div class="field"><label for="synth-next">The experiment you want to try next</label><textarea id="synth-next" data-path="synthesis.next" placeholder="Where does the next prototype head?">'+esc(state.synthesis.next)+'</textarea></div>'
+      + '</div>'
+      + '</div>';
+
+    var statusText = state.savedAt ? (new Date(state.savedAt).toLocaleString() + ' Saved') : 'Not saved yet';
+    var statusbar = '<div class="statusbar"><span id="save-status">'+esc(statusText)+'</span><button id="save-btn" type="button">Save</button></div>';
+
+    return hero + dots + days + synthesis + statusbar;
+  }
+
+  function getPath(obj, path){
+    var keys = path.split(".");
+    var o = obj;
+    for(var i=0;i<keys.length;i++){ if(o==null) return undefined; o = o[keys[i]]; }
+    return o;
+  }
+  function setPath(obj, path, val){
+    var keys = path.split(".");
+    var o = obj;
+    for(var i=0;i<keys.length-1;i++){ o = o[keys[i]]; }
+    o[keys[keys.length-1]] = val;
+  }
+
+  var artifactAPI = null, triedArtifact = false;
+  function getArtifact(){
+    if(triedArtifact) return Promise.resolve(artifactAPI);
+    triedArtifact = true;
+    if(!window.claude || !window.claude.use) return Promise.resolve(null);
+    return window.claude.use("artifact").then(function(api){ artifactAPI = api; return api; }).catch(function(){ return null; });
+  }
+
+  function buildFullHTML(state){
+    var titleTag = document.querySelector("title").outerHTML;
+    var styleEl = document.getElementById("page-style");
+    if(!styleEl){
+      var allStyles = document.querySelectorAll("style");
+      styleEl = allStyles[allStyles.length-1];
+    }
+    var styleTag = styleEl ? styleEl.outerHTML : "";
+    var linkTag = document.querySelector('link[rel="stylesheet"]');
+    linkTag = linkTag ? linkTag.outerHTML : "";
+    var head = '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
+      + titleTag + styleTag + linkTag;
+    var stateScript = '<script id="init-state" type="application/json">'+safeJSON(state)+'<'+'/script>';
+    var mainScript = '<script>'+SELF_SRC.replace(/<\/script/gi,"<\\/script")+'<'+'/script>';
+    var body = '<div id="app"></div>' + stateScript + mainScript;
+    return '<!doctype html><html><head>'+head+'</head><body>'+body+'</body></html>';
+  }
+
+  function setStatus(text){
+    var el = document.getElementById("save-status");
+    if(el) el.textContent = text;
+  }
+
+  var saving = false, pendingAgain = false;
+  function doSave(){
+    if(saving){ pendingAgain = true; return; }
+    saving = true;
+    setStatus("Saving...");
+    getArtifact().then(function(api){
+      if(!api){
+        setStatus("Not connected — changes will only persist in this tab.");
+        saving = false;
+        return;
+      }
+      STATE.savedAt = new Date().toISOString();
+      var html = buildFullHTML(STATE);
+      return api.publish(html).then(function(){
+        setStatus(new Date(STATE.savedAt).toLocaleString() + " Saved");
+      }).catch(function(){
+        setStatus("Couldn\'t save, please try again.");
+      }).then(function(){
+        saving = false;
+        if(pendingAgain){ pendingAgain = false; doSave(); }
+      });
+    });
+  }
+
+  var blurTimer = null;
+  function scheduleSave(delay){
+    clearTimeout(blurTimer);
+    blurTimer = setTimeout(doSave, delay);
+  }
+
+  function attach(){
+    var app = document.getElementById("app");
+    app.addEventListener("input", function(e){
+      var t = e.target;
+      if(t && t.dataset && t.dataset.path && t.type !== "checkbox"){
+        setPath(STATE, t.dataset.path, t.value);
+      }
+    });
+    app.addEventListener("change", function(e){
+      var t = e.target;
+      if(t && t.dataset && t.dataset.path && t.type === "checkbox"){
+        setPath(STATE, t.dataset.path, t.checked);
+        var dot = document.getElementById("dot-"+t.dataset.day);
+        if(dot) dot.classList.toggle("done", t.checked);
+        var labelEl = t.closest(".done-toggle");
+        if(labelEl) labelEl.lastChild.textContent = t.checked ? "Done" : "Mark done";
+        var countEl = document.querySelector(".progress .label");
+        if(countEl){
+          var n = STATE.days.filter(function(d){return d.done;}).length;
+          countEl.textContent = n + " of 6 prototypes logged";
+        }
+        scheduleSave(200);
+      }
+    });
+    app.addEventListener("blur", function(e){
+      var t = e.target;
+      if(t && t.dataset && t.dataset.path && t.type !== "checkbox"){
+        scheduleSave(150);
+      }
+    }, true);
+    var btn = document.getElementById("save-btn");
+    if(btn) btn.addEventListener("click", function(){ scheduleSave(0); });
+  }
+
+  document.getElementById("app").innerHTML = renderBody(STATE);
+  attach();
+})();
+</script>
+
+</body>
+</html>
